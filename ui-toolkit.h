@@ -1,15 +1,21 @@
 #ifndef UI_TOOLKIT_H
 #define UI_TOOLKIT_H
 
+#include "theme.h"
+#include "ui-parser.h"
+#include "ui-types.h"
+
+
+// Headers
+
+uiCanvas uiGet(xWindow window);
+
 #include "x11-interface.h"
-#include <stdbool.h>
 
 
 // Implementation
 
 float uiMargin = 5;
-
-#include "ui-parser.h"
 
 uiCanvas uiGet(xWindow window)
 {
@@ -45,11 +51,11 @@ uiCanvas uiGet(xWindow window)
 	canvas.bgColour = nvgHSL(0, 0, 1);
 	
 	// Default fonts
-	if (nvgCreateFont(canvas.nano, "normal", "Resources/LiberationSans-Regular.ttf") == -1)
+	if (nvgCreateFont(canvas.nano, "normal", themeFont) == -1)
 		{ printf("Failed to create font normal.\n"); }
-	if (nvgCreateFont(canvas.nano, "bold", "Resources/LiberationSans-Bold.ttf") == -1)
+	if (nvgCreateFont(canvas.nano, "bold", themeFontBold) == -1)
 		{ printf("Failed to create font bold.\n"); }
-	if (nvgCreateFont(canvas.nano, "italic", "Resources/LiberationSans-Italic.ttf") == -1)
+	if (nvgCreateFont(canvas.nano, "italic", themeFontItalic) == -1)
 		{ printf("Failed to create font italic.\n"); }
 	
 	return canvas;

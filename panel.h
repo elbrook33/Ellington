@@ -22,15 +22,19 @@ void panelRedraw(wmSession desktop)
 
 wmSession panelEvents(wmSession desktop)
 {
-	if(XPending(desktop.panel.display) == 0) { return desktop; }
+	if(XPending(desktop.panel.display) == 0)
+	{
+		panelRedraw(desktop);
+		return desktop;
+	}
 	
 	XEvent event;
 	XNextEvent(desktop.panel.display, &event);
-
+	
 	switch(event.type)
 	{
 	}
-
+	
 	return desktop;
 }
 

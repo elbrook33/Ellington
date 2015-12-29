@@ -23,7 +23,7 @@ wallpaperDragState wallpaperDrag;
 xWindow wallpaperGet(wmSession desktop)
 {
 	xWindow wallpaper = xCreate(desktop.root, 0, 0, desktop.root.attributes.width, desktop.root.attributes.height);
-	wallpaper.canvas = uiSet(wallpaper, themePanelFg, themePanelBg, "/opt/ellington/Resources/Desktop.jpg");
+	wallpaper.canvas = uiSet(wallpaper, themePanelFg, themePanelBg, themeWallpaper);
 
 	XSelectInput(wallpaper.display, wallpaper.id,
 		PointerMotionMask|ButtonPressMask|ButtonReleaseMask);

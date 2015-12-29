@@ -1,25 +1,26 @@
+//
+// Window manager
+//
+// This is the main starting point for the app.
+// It starts following new windows and sets up hot keys.
+// It also launches the desktop wallpaper (which handles shadows and window movements) and panel.
+//
+
 #ifndef WINDOW_MANAGER_H
 #define WINDOW_MANAGER_H
 
-// Header
-
-#include "x11-interface.h"
+#include "ui-toolkit.h"
 #include "helpers.h"
 
+
+// Some default dimensions
 const int
 	wmTop = 22,
 	wmOuter = 15,
 	wmInner = 10;
 
-typedef struct wmSession
-{
-	xWindow root, panel, wallpaper;
-	xWindow workspaces[10][4];
-	int workspaceLengths[10];
-	int activeWorkspace;
-	int activeWindow;
-} wmSession;
 
+// Headers (used by panel and wallpaper)
 #define wmWorkspace(desktop) desktop.workspaces[desktop.activeWorkspace]
 #define wmLength(desktop) desktop.workspaceLengths[desktop.activeWorkspace]
 
@@ -28,12 +29,11 @@ wmSession wmSwapPlaces(wmSession desktop, int indexA, int indexB);
 wmSession wmUpdateWindowAttributes(wmSession desktop);
 int wmErrorHandler(Display* display, XErrorEvent* error);
 
-
-// Implementation
-
 #include "panel.h"
 #include "wallpaper.h"
 
+
+// Functions
 wmSession wmGet(const char* displayID)
 {
 	xWindow root = xGetRoot(displayID);
@@ -58,12 +58,13 @@ wmSession wmGet(const char* displayID)
 	XGrabKey(root.display, 27, Mod4Mask, root.id, true, GrabModeAsync, GrabModeAsync);	// R
 	XGrabKey(root.display, 28, Mod4Mask, root.id, true, GrabModeAsync, GrabModeAsync);	// T
 	
+	// Create components
 	wmSession desktop = {0};
 	desktop.root = root;
-
+	
 	desktop.wallpaper = wallpaperGet(desktop);
 	wallpaperRedraw(desktop);
-
+	
 	desktop.panel = panelGet(desktop);
 	panelRedraw(desktop);
 	
@@ -141,8 +142,6 @@ wmSession wmLayoutWorkspace(wmSession desktop)
 	}
 	
 	desktop = wmUpdateWindowAttributes(desktop);
-	XSync(desktop.root.display, false);
-	
 	wallpaperRedraw(desktop);
 	
 	return desktop;
@@ -177,24 +176,30 @@ wmSession wmSwapPlaces(wmSession desktop, int indexA, int indexB)
 	return desktop;
 }
 
-wmSession wmRemoveByID(wmSession desktop, Window id)
+wmSession wmRemoveByID(wmSession desktop, int workspace, Window id)
+{
+	for(int window = 0; window < desktop.workspaceLengths[workspace]; window++)
+	{
+		// Find matching window in each workspace
+		if(desktop.workspaces[workspace][window].id == id)
+		{
+			// Shift other windows into its place
+			for(int shift = window + 1; shift < desktop.workspaceLengths[workspace]; shift++)
+			{
+				desktop.workspaces[workspace][shift - 1] = desktop.workspaces[workspace][shift];
+			}
+			desktop.workspaceLengths[workspace] -= 1;
+			break;
+		}
+	}
+	return desktop;
+}
+
+wmSession wmRemoveEverywhereByID(wmSession desktop, Window id)
 {
 	for(int workspace = 0; workspace < 10; workspace++)
 	{
-		for(int window = 0; window < desktop.workspaceLengths[workspace]; window++)
-		{
-			// Find matching window in each workspace
-			if(desktop.workspaces[workspace][window].id == id)
-			{
-				// Shift other windows into its place
-				for(int shift = window + 1; shift < desktop.workspaceLengths[workspace]; shift++)
-				{
-					desktop.workspaces[workspace][shift - 1] = desktop.workspaces[workspace][shift];
-				}
-				desktop.workspaceLengths[workspace] -= 1;
-				break;
-			}
-		}
+		desktop = wmRemoveByID(desktop, workspace, id);
 	}
 	return desktop;
 }
@@ -210,7 +215,6 @@ wmSession wmGlobalEvents(wmSession desktop)
 	xWindow targetedWindow;
 	switch(event.type)
 	{
-		// Global events
 		case MapRequest:
 			printf("wmGlobalEvent MapRequest\n");
 			
@@ -262,12 +266,15 @@ wmSession wmGlobalEvents(wmSession desktop)
 		
 		case UnmapNotify:
 			printf("wmGlobalEvent UnmapNotify\n");
+			
+			desktop = wmRemoveByID(desktop, desktop.activeWorkspace, event.xunmap.window);
+			desktop = wmLayoutWorkspace(desktop);
 			break;
 		
 		case DestroyNotify:
 			printf("wmGlobalEvent DestroyNotify\n");
 
-			desktop = wmRemoveByID(desktop, event.xunmap.window);
+			desktop = wmRemoveEverywhereByID(desktop, event.xdestroywindow.window);
 			desktop = wmLayoutWorkspace(desktop);
 			break;
 		
@@ -299,9 +306,11 @@ wmSession wmGlobalEvents(wmSession desktop)
 			break;
 	}
 	
+	// Go again
 	return wmGlobalEvents(desktop);
 }
 
+// Keep track of BadWindows (errors for destroyed windows), to remove them from layouts later
 struct wmRemovals
 {
 	void* sessionID;
@@ -320,7 +329,7 @@ wmSession wmEvents(wmSession desktop)
 	// Remove failed windows
 	for(int i = 0; i < wmRemovals.length; i++)
 	{
-		desktop = wmRemoveByID(desktop, wmRemovals.queue[i]);
+		desktop = wmRemoveEverywhereByID(desktop, wmRemovals.queue[i]);
 	}
 	wmRemovals.length = 0;
 	
@@ -341,11 +350,16 @@ wmSession wmEvents(wmSession desktop)
 	selectMax = max(selectMax, connection);
 	FD_SET(connection, &selectMask);
 	
-	select(selectMax, &selectMask, NULL, NULL, NULL);
-		
+	struct timeval timeout;
+	timeout.tv_sec = 60;
+	timeout.tv_usec = 0;
+	
+	select(selectMax, &selectMask, NULL, NULL, &timeout);
+	
 	return desktop;
 }
 
+// Replacement X11 error handler - note BadWindows
 int wmErrorHandler(Display* display, XErrorEvent* error) {
 	printf("X11 error. Request %i, code %i.%i, resource %li\n",
 		error->request_code, error->error_code, error->minor_code, error->resourceid);

@@ -1,50 +1,19 @@
+//
+// Routines for creating windows and getting their attributes
+//
+
 #ifndef X11_INTERFACE_H
 #define X11_INTERFACE_H
 
-#include <GL/glew.h>
-#include <GL/glx.h>
-#include <GL/gl.h>
-#define NANOVG_GLEW
-#define NANOVG_GL2_IMPLEMENTATION
-#include "nanovg.h"
-#include "nanovg_gl.h"
-#include <X11/Xlib.h>
-#include <X11/extensions/Xcomposite.h>
-#include <X11/Xatom.h>	// For WINDOW_TYPE
-#include <X11/Xutil.h>	// For titles and app names
-#include <stdio.h>
-#include <stdbool.h>
-
-
-// Header
-
-// Define uiCanvas here, since it's needed for xWindow
-typedef struct uiCanvas
-{
-	GLXContext glx;
-	NVGcontext* nano;
-	
-	float left, right, top, bottom,
-		fontSize, lineHeight;
-	
-	NVGcolor fgColour, bgColour;
-	int bgImage;
-	NVGpaint bgImagePattern;
-} uiCanvas;
-
-typedef struct xWindow
-{
-	Display* display;
-	Window id;
-	XWindowAttributes attributes;
-	XClassHint name;
-	uiCanvas canvas;
-} xWindow;
-
-
-// Implementation
-
 #include "ui-toolkit.h"
+#include "ui-types.h"
+
+xWindow xUpdateAttributes(xWindow window)
+{
+	XGetWindowAttributes(window.display, window.id, &window.attributes);
+	XGetClassHint(window.display, window.id, &window.name);
+	return window;
+}
 
 xWindow xGetRoot(const char* displayID)
 {
@@ -52,7 +21,7 @@ xWindow xGetRoot(const char* displayID)
 
 	root.display = XOpenDisplay(displayID);
 	root.id = XDefaultRootWindow(root.display);
-	XGetWindowAttributes(root.display, root.id, &root.attributes);
+	root = xUpdateAttributes(root);
 
 	return root;
 }
@@ -63,7 +32,7 @@ xWindow xGetWindow(xWindow root, Window id)
 	
 	newWindow.display = root.display;
 	newWindow.id = id;
-	XGetWindowAttributes(root.display, id, &newWindow.attributes);
+	newWindow = xUpdateAttributes(newWindow);
 	
 	return newWindow;
 }
@@ -94,24 +63,13 @@ bool xIsNormal(xWindow window)
 	Atom windowType = xGetWindowType(window);
 	Atom flag_normalWindow =
 		XInternAtom(window.display, "_NET_WM_WINDOW_TYPE_NORMAL", false);
+	Atom flag_dialogWindow =
+		XInternAtom(window.display, "_NET_WM_WINDOW_TYPE_DIALOG", false);
 	
 	return window.attributes.override_redirect == false
 		&& (windowType == flag_normalWindow
+			|| windowType == flag_dialogWindow
 			|| windowType == 0);
-}
-
-xWindow xUpdateAttributes(xWindow window)
-{
-	XGetWindowAttributes(window.display, window.id, &window.attributes);
-	XGetClassHint(window.display, window.id, &window.name);
-	return window;
-}
-
-const char* xGetAppName(xWindow window)
-{
-}
-const char* xGetTitle(xWindow window)
-{
 }
 
 xWindow xCreate(xWindow root, int x, int y, int width, int height)
@@ -127,8 +85,8 @@ xWindow xCreate(xWindow root, int x, int y, int width, int height)
 		root.attributes.depth, CopyFromParent, CopyFromParent,
 		CWOverrideRedirect, &attributes
 	);
-	XGetWindowAttributes(newWindow.display, newWindow.id, &newWindow.attributes);
 	
+	newWindow = xUpdateAttributes(newWindow);
 	newWindow.canvas = uiGet(newWindow);
 	
 	return newWindow;

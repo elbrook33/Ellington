@@ -1,7 +1,13 @@
 #ifndef THEME_H
 #define THEME_H
 
-// Font attributes
+// Desktop picture
+#define themeWallpaper "/opt/ellington/Resources/Desktop.jpg"
+
+// Fonts
+#define themeFont	"/opt/ellington/Resources/LiberationSans-Regular.ttf"
+#define themeFontBold	"/opt/ellington/Resources/LiberationSans-Bold.ttf"
+#define themeFontItalic	"/opt/ellington/Resources/LiberationSans-Italic.ttf"
 #define themeFontSize	13
 #define themeLineHeight	22
 

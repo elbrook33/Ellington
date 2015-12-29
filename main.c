@@ -1,13 +1,15 @@
-/*
- * Ellington Desktop
- *
- * To do:
- * - Panel applets: applications menu, workspace switcher, windows list, clock, status tray, log out.
- * - Extra workspace actions (e.g. copy and paste).
- * - Titlebar text and close button.
- * - Full-screen.
- * - Problem cases: Firefox tooltips, xfce4-taskmanager...
- */
+//
+// Ellington Desktop
+// =================
+//
+// To do
+// -----
+// * Panel applets: applications menu, workspace switcher, windows list, clock, status tray, log out.
+// * Extra workspace actions (e.g. copy and paste).
+// * Titlebar text and close button.
+// * Full-screen.
+// * Problem cases: Firefox tooltips, xfce4-taskmanager...
+//
 
 #include "window-manager.h"
 

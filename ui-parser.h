@@ -2,8 +2,7 @@
 #define UI_PARSER_H
 
 #include "helpers.h"
-#include <string.h>
-#include <stdbool.h>
+#include "ui-types.h"
 
 void uiParse(xWindow window, const char* markup,
 	bool (*action)(xWindow, const char*, const char*, float, float, float*, int*, void*),
