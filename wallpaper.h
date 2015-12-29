@@ -1,6 +1,7 @@
 #ifndef WALLPAPER_H
 #define WALLPAPER_H
 
+#include "theme.h"
 #include "window-manager.h"
 
 
@@ -22,7 +23,7 @@ wallpaperDragState wallpaperDrag;
 xWindow wallpaperGet(wmSession desktop)
 {
 	xWindow wallpaper = xCreate(desktop.root, 0, 0, desktop.root.attributes.width, desktop.root.attributes.height);
-	wallpaper.canvas = uiSet(wallpaper, 0, 0, 1, 0, 0.1, 0.5, "/opt/ellington/Resources/Desktop.jpg");
+	wallpaper.canvas = uiSet(wallpaper, themePanelFg, themePanelBg, "/opt/ellington/Resources/Desktop.jpg");
 
 	XSelectInput(wallpaper.display, wallpaper.id,
 		PointerMotionMask|ButtonPressMask|ButtonReleaseMask);
@@ -81,13 +82,13 @@ void wallpaperRedraw(wmSession desktop)
 			
 			// Darker titlebar
 			nvgBeginPath(desktop.wallpaper.canvas.nano);
-			nvgFillColor(desktop.wallpaper.canvas.nano, nvgHSL(0, 0.1, 0.5));
+			nvgFillColor(desktop.wallpaper.canvas.nano, nvgHSL(themeTitlebarActive));
 		}
 		else
 		{
 			// Lighter titlebar
 			nvgBeginPath(desktop.wallpaper.canvas.nano);
-			nvgFillColor(desktop.wallpaper.canvas.nano, nvgHSL(0, 0.1, 0.75));
+			nvgFillColor(desktop.wallpaper.canvas.nano, nvgHSL(themeTitlebarInactive));
 		}
 		nvgRect(desktop.wallpaper.canvas.nano,
 			wmWorkspace(desktop)[window].attributes.x,

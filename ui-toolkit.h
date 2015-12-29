@@ -8,7 +8,6 @@
 // Implementation
 
 float uiMargin = 5;
-int uiTabSize = 100;
 
 #include "ui-parser.h"
 

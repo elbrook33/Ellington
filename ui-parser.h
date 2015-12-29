@@ -33,7 +33,7 @@ void uiParse(xWindow window, const char* markup,
 	{
 		parIndex += 1;
 		
-		char *tabs = strdup(par);
+		char *tabs = par;
 		char *tab, *tabProgress;
 		
 		// Tabs are effectively tables
@@ -78,7 +78,7 @@ void uiParse(xWindow window, const char* markup,
 			}
 			
 			// Words may need to eventually be traversed twice for centre and right alignments
-			char *words = strdup(tab);
+			char *words = tab;
 			char *word, *wordProgress;
 			
 			int wordIndex = 0;
@@ -131,7 +131,7 @@ void uiParse(xWindow window, const char* markup,
 					action(window, word, NULL, x, y, bounds, indices, data);
 				
 				if(!keepGoing)
-					{ free(words); free(tabs); free(pars); return; }
+					{ free(pars); return; }
 				
 				// Advance text entry position
 				switch(tabAlignment)
@@ -149,9 +149,7 @@ void uiParse(xWindow window, const char* markup,
 						break;
 				}
 			}
-			free(words);
 		}
-		free(tabs);
 	}
 	free(pars);
 }
