@@ -2,7 +2,6 @@
  * Ellington Desktop
  *
  * To do:
- * - Panel. Requires some UI-Toolkit.
  * - Panel applets: applications menu, workspace switcher, windows list, clock, status tray, log out.
  * - Extra workspace actions (e.g. copy and paste).
  * - Titlebar text and close button.

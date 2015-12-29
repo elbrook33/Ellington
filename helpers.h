@@ -20,7 +20,6 @@ int strcount(const char* text, char c)
 	int count;
 	for(count = 0; *text; text++)
 		{ count += (*text == c); }
-	printf("%i of %c in %s\n", count, c, text);
 	return count;
 }
 

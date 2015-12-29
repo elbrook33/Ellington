@@ -77,7 +77,7 @@ void uiParse(xWindow window, const char* markup,
 					nvgTextAlign(window.canvas.nano, NVG_ALIGN_LEFT|NVG_ALIGN_TOP);
 			}
 			
-			// Words may need to be traversed twice for centre and right alignments
+			// Words may need to eventually be traversed twice for centre and right alignments
 			char *words = strdup(tab);
 			char *word, *wordProgress;
 			
